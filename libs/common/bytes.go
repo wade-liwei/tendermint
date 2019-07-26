@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
