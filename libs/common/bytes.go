@@ -3,7 +3,11 @@ package common
 import (
 	"encoding/hex"
 	"fmt"
+	"reflect"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson/bsoncodec"
+	"go.mongodb.org/mongo-driver/bson/bsonrw"
 )
 
 // The main purpose of HexBytes is to enable HEX-encoding for json/encoding.
