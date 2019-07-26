@@ -9,6 +9,22 @@ import (
 // The main purpose of HexBytes is to enable HEX-encoding for json/encoding.
 type HexBytes []byte
 
+// EncodeValue  for mongodb encode
+func (bz *HexBytes) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
+	fmt.Printf("Hexbytes---------------------------byte:  %v  string: %v \n", val.Bytes(), string(val.Bytes()))
+	return vw.WriteString(fmt.Sprintf("%X", val.Bytes()))
+}
+
+// DecodeValue negates the value of ID when reading
+func (bz *HexBytes) DecodeValue(ectx bsoncodec.DecodeContext, vr bsonrw.ValueReader, val reflect.Value) error {
+	i, err := vr.ReadInt64()
+	if err != nil {
+		return err
+	}
+	val.SetInt(i * -1)
+	return nil
+}
+
 // Marshal needed for protobuf compatibility
 func (bz HexBytes) Marshal() ([]byte, error) {
 	return bz, nil
