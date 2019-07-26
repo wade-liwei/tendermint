@@ -3,11 +3,11 @@ package common
 import (
 	"encoding/hex"
 	"fmt"
-	"reflect"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/bson/bsonrw"
+	"reflect"
+	"strings"
 )
 
 // The main purpose of HexBytes is to enable HEX-encoding for json/encoding.
@@ -15,7 +15,9 @@ type HexBytes []byte
 
 // EncodeValue  for mongodb encode
 func (bz *HexBytes) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
-	fmt.Printf("Hexbytes---------------------------byte:  %v  string: %v \n", val.Bytes(), string(val.Bytes()))
+	if val.IsNil() {
+		return errors.New("HexByte value is nil")
+	}
 	return vw.WriteString(fmt.Sprintf("%X", val.Bytes()))
 }
 
