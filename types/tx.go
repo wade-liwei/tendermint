@@ -16,8 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/bson/bsonrw"
 	"reflect"
-
-	"github.com/btcsuite/btcutil/base58"
 )
 
 // Tx is an arbitrary byte array.
@@ -28,10 +26,7 @@ type Tx []byte
 func (e *Tx) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
 	if val.IsValid() {
 		base64Str := base64.StdEncoding.EncodeToString(val.Bytes())
-
-		base58Str := base58.Encode(val.Bytes())
-		fmt.Printf("base64Str:  %v \n  base58: %v \n", base64Str, base58Str)
-		return vw.WriteString(base58Str)
+		return vw.WriteString(base64Str)
 		//return vw.WriteString(Tx(val.Bytes()).String())
 	}
 	return errors.New("tx of proof encoder value is invalid.")
