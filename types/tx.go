@@ -18,6 +18,23 @@ import (
 // Might we want types here ?
 type Tx []byte
 
+func (e *Tx) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
+	if val.IsValid() {
+		return vw.WriteString(string(val.Bytes()))
+	}
+	return errors.New("tx of proof encoder value is invalid.")
+}
+
+// DecodeValue negates the value of ID when reading
+func (e *Tx) DecodeValue(ectx bsoncodec.DecodeContext, vr bsonrw.ValueReader, val reflect.Value) error {
+	i, err := vr.ReadInt64()
+	if err != nil {
+		return err
+	}
+	val.SetInt(i * -1)
+	return nil
+}
+
 // Hash computes the TMHASH hash of the wire encoded transaction.
 func (tx Tx) Hash() []byte {
 	return tmhash.Sum(tx)
