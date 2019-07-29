@@ -23,7 +23,7 @@ type Tx []byte
 
 func (e *Tx) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
 	if val.IsValid() {
-		return vw.WriteString(string(val.Bytes()))
+		return vw.WriteString(Tx(val.Bytes()).String())
 	}
 	return errors.New("tx of proof encoder value is invalid.")
 }
