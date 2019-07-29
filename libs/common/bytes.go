@@ -16,9 +16,6 @@ type HexBytes []byte
 
 // EncodeValue  for mongodb encode
 func (bz *HexBytes) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
-	if val.IsNil() {
-		return errors.New("HexByte value is nil")
-	}
 	return vw.WriteString(fmt.Sprintf("%X", val.Bytes()))
 }
 
