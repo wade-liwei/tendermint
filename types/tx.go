@@ -27,7 +27,6 @@ func (e *Tx) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, va
 	if val.IsValid() {
 		base64Str := base64.StdEncoding.EncodeToString(val.Bytes())
 		return vw.WriteString(base64Str)
-		//return vw.WriteString(Tx(val.Bytes()).String())
 	}
 	return errors.New("tx of proof encoder value is invalid.")
 }

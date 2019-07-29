@@ -5,6 +5,12 @@ import (
 	"errors"
 	"fmt"
 
+	"encoding/base64"
+
+	"go.mongodb.org/mongo-driver/bson/bsoncodec"
+	"go.mongodb.org/mongo-driver/bson/bsonrw"
+	"reflect"
+
 	cmn "github.com/tendermint/tendermint/libs/common"
 )
 
@@ -20,6 +26,26 @@ type SimpleProof struct {
 	Index    int      `json:"index"`     // Index of item to prove.
 	LeafHash []byte   `json:"leaf_hash"` // Hash of item value.
 	Aunts    [][]byte `json:"aunts"`     // Hashes from leaf's sibling to a root's child.
+}
+
+func (e *SimpleProof) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
+	if val.IsValid() {
+
+		fmt.Printf("simple proof val type:  %v \n", val.Type())
+		base64Str := base64.StdEncoding.EncodeToString(val.Bytes())
+		return vw.WriteString(base64Str)
+	}
+	return errors.New("tx of proof encoder value is invalid.")
+}
+
+// DecodeValue negates the value of ID when reading
+func (e *SimpleProof) DecodeValue(ectx bsoncodec.DecodeContext, vr bsonrw.ValueReader, val reflect.Value) error {
+	i, err := vr.ReadInt64()
+	if err != nil {
+		return err
+	}
+	val.SetInt(i * -1)
+	return nil
 }
 
 // SimpleProofsFromByteSlices computes inclusion proof for given items.
