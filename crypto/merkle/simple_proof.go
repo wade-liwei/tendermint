@@ -30,10 +30,36 @@ type SimpleProof struct {
 
 func (e *SimpleProof) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
 	if val.IsValid() {
-
 		fmt.Printf("simple proof val type:  %v \n", val.Type())
-		base64Str := base64.StdEncoding.EncodeToString(val.Bytes())
-		return vw.WriteString(base64Str)
+		if _, ok := val.Interface().([]uint8); ok {
+			base64Str := base64.StdEncoding.EncodeToString(val.Bytes())
+			return vw.WriteString(base64Str)
+		}
+
+		if arr, ok := val.Interface().([][]uint8); ok {
+			strArr := make([]string, 0, len(arr))
+			for _, v := range arr {
+				strArr = append(strArr, base64.StdEncoding.EncodeToString(v))
+			}
+
+			aw, err := vw.WriteArray()
+			if err != nil {
+				return err
+			}
+
+			for idx := 0; idx < len(strArr); idx++ {
+				vw, err := aw.WriteArrayElement()
+				if err != nil {
+					return err
+				}
+
+				err = vw.WriteString(strArr[idx])
+				if err != nil {
+					return err
+				}
+			}
+			return aw.WriteArrayEnd()
+		}
 	}
 	return errors.New("tx of proof encoder value is invalid.")
 }
