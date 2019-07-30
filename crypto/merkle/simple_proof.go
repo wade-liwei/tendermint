@@ -30,7 +30,6 @@ type SimpleProof struct {
 
 func (e *SimpleProof) EncodeValue(ectx bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
 	if val.IsValid() {
-		fmt.Printf("simple proof val type:  %v \n", val.Type())
 		if _, ok := val.Interface().([]uint8); ok {
 			base64Str := base64.StdEncoding.EncodeToString(val.Bytes())
 			return vw.WriteString(base64Str)
