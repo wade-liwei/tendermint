@@ -1,0 +1,118 @@
+version: '3'
+
+services:
+  node0:
+    image: tendermint/localnode
+    environment:
+     - ID=0
+    ports:
+    - target: 26656
+      published: 26656
+      protocol: tcp
+      mode: host
+    - target: 26657
+      published: 26657
+      protocol: tcp
+      mode: host
+    volumes:
+    - /home/ubuntu/build:/tendermint:Z
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.hostname == node0
+
+  node1:
+    image: tendermint/localnode
+    environment:
+     - ID=1
+    ports:
+    - target: 26656
+      published: 26656
+      protocol: tcp
+      mode: host
+    - target: 26657
+      published: 26657
+      protocol: tcp
+      mode: host
+    volumes:
+    - /home/ubuntu/build:/tendermint:Z
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.hostname == node1
+
+  node2:
+    image: tendermint/localnode
+    environment:
+     - ID=2
+    ports:
+    - target: 26656
+      published: 26656
+      protocol: tcp
+      mode: host
+    - target: 26657
+      published: 26657
+      protocol: tcp
+      mode: host
+    volumes:
+    - /home/ubuntu/build:/tendermint:Z
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.hostname == node2
+
+  node3:
+    image: tendermint/localnode
+    environment:
+     - ID=3
+    ports:
+    - target: 26656
+      published: 26656
+      protocol: tcp
+      mode: host
+    - target: 26657
+      published: 26657
+      protocol: tcp
+      mode: host
+    volumes:
+    - /home/ubuntu/build:/tendermint:Z
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.hostname == node3
+
+  node4:
+    image: tendermint/localnode
+    environment:
+     - ID=4
+    ports:
+    - target: 26656
+      published: 26656
+      protocol: tcp
+      mode: host
+    - target: 26657
+      published: 26657
+      protocol: tcp
+      mode: host
+    volumes:
+    - /home/ubuntu/build:/tendermint:Z
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.hostname == node4
+ 
