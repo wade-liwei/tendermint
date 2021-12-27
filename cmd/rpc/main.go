@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"encoding/json"
 	"flag"
-
-	//"crypto/md5"
+	"sync"
+	"time"
 
 	"crypto/md5"
+	"sync/atomic"
+
+	"golang.org/x/time/rate"
 
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
@@ -33,15 +35,11 @@ func main() {
 
 	host := flag.String("host", "http://127.0.0.1", "请输入host地址")
 	port := flag.Int("port", 26657, "请输入端口号")
-	randomPre := flag.Bool("random", false, "默认不启用，启用后增加随机的xxxxxxxx=")
-	md5Count := flag.Int("md5count", 0, "请输入md5个数")
-	txCount := flag.Int("txcount", 0, "请输入md5个数")
-	flag.Parse()
+	md5Count := flag.Int("md5count", 1024, "请输入md5个数")
+	rateUnit := flag.Int("rateUnit", 1, "单位是 Millisecond ")
+	duration := flag.Int("duration", 10, "单位是 second ")
 
-	if *md5Count == 0 || *txCount == 0 {
-		fmt.Printf("please  with md5 %d  and tx  %d  flag  port %d  \n",*md5Count,*txCount,*port)
-		return
-	}
+	flag.Parse()
 
 	md5hashs := make([]byte, 0, md5.Size*(*md5Count))
 	for i := 0; i < *md5Count; i++ {
@@ -50,37 +48,37 @@ func main() {
 	}
 
 	c := getHTTPClient(fmt.Sprintf("%s:%d", *host, *port))
-	if *randomPre {
-		for i := 0; i < *txCount; i++ {
+
+	limiter := rate.NewLimiter(rate.Every(time.Duration(*rateUnit)*time.Millisecond), 5)
+
+	wg := sync.WaitGroup{}
+	maxChannel := make(chan struct{}, 10000)
+	beginTime := time.Now()
+	cxt, _ := context.WithCancel(context.TODO())
+	var count int64
+
+	for {
+		limiter.Wait(cxt)
+		wg.Add(1)
+
+		go func() {
+			maxChannel <- struct{}{}
 			bres, err := c.BroadcastTxSync(context.Background(), append([]byte(tmrand.Str(10)+"="), md5hashs...))
-
 			if err != nil {
 				panic(err)
 			}
+			_ = bres
+			wg.Done()
+			<-maxChannel
+			count = atomic.AddInt64(&count, 1)
+		}()
 
-			b, err := json.Marshal(bres)
-			if err != nil {
-				fmt.Println("JSON ERR:", err)
-			}
-			fmt.Println(string(b))
-		}
-
-	} else {
-
-		for i := 0; i < *txCount; i++ {
-			c := getHTTPClient(fmt.Sprintf("%s:%d", *host, *port))
-			bres, err := c.BroadcastTxSync(context.Background(), md5hashs)
-
-			if err != nil {
-				panic(err)
-			}
-
-			b, err := json.Marshal(bres)
-			if err != nil {
-				fmt.Println("JSON ERR:", err)
-			}
-			fmt.Println(string(b))
+		if beginTime.Add(time.Duration(*duration)).After(time.Now()) {
+			break
 		}
 	}
-}
 
+	wg.Wait()
+
+	fmt.Printf("every: %v duration: %v txcount: %v real duration: %v \n", rateUnit, duration, count, time.Now().Sub(beginTime))
+}
