@@ -49,10 +49,7 @@ func main() {
 
 	c := getHTTPClient(fmt.Sprintf("%s:%d", *host, *port))
 
-	//rate /
-	//1000 * 1000 / rate
-
-	limiter := rate.NewLimiter(rate.Every(time.Duration(1000*1000 / *sendRate)*time.Microsecond), 2)
+	limiter := rate.NewLimiter(rate.Every(time.Duration(1000*1000 / *sendRate)*time.Microsecond), 5)
 
 	wg := sync.WaitGroup{}
 	maxChannel := make(chan struct{}, 10000)
@@ -76,7 +73,7 @@ func main() {
 			count = atomic.AddInt64(&count, 1)
 		}()
 
-		if beginTime.Add(time.Duration(*duration) * time.Second).Before(time.Now()) {
+		if beginTime.Add(time.Duration(*duration)*time.Second).Before(time.Now()) && count >= int64((*sendRate)*(*duration)) {
 			break
 		}
 	}
