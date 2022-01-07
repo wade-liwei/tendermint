@@ -11,10 +11,9 @@ import (
 	"crypto/md5"
 	"sync/atomic"
 
-	"golang.org/x/time/rate"
-
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
+	"golang.org/x/time/rate"
 )
 
 func getHTTPClient(rpcAddr string) *rpchttp.HTTP {
@@ -35,8 +34,9 @@ func main() {
 
 	host := flag.String("host", "http://127.0.0.1", "请输入host地址")
 	port := flag.Int("port", 26657, "请输入端口号")
-	md5Count := flag.Int("md5count", 1024, "请输入md5个数")
-	rateUnit := flag.Int("rateUnit", 1, "单位是 Millisecond ")
+
+	md5Count := flag.Int("md5count", 5000, "请输入md5个数")
+	sendRate := flag.Int("rateUnit", 1024, "单位是 Millisecond ")
 	duration := flag.Int("duration", 10, "单位是 second ")
 
 	flag.Parse()
@@ -49,7 +49,10 @@ func main() {
 
 	c := getHTTPClient(fmt.Sprintf("%s:%d", *host, *port))
 
-	limiter := rate.NewLimiter(rate.Every(time.Duration(*rateUnit)*time.Microsecond), 2)
+	//rate /
+	//1000 * 1000 / rate
+
+	limiter := rate.NewLimiter(rate.Every(time.Duration(1000*1000 / *sendRate)*time.Microsecond), 2)
 
 	wg := sync.WaitGroup{}
 	maxChannel := make(chan struct{}, 10000)
@@ -80,7 +83,7 @@ func main() {
 
 	wg.Wait()
 
-	fmt.Printf("every: %v duration: %v txcount: %v real duration: %v  md5hashs.len: %vB/tx  %vKB/tx totalSize %v KB / realDuration %v = %v KB/s  \n", *rateUnit, *duration, count, time.Now().Sub(beginTime), len(md5hashs), len(md5hashs)/1024, int64(len(md5hashs)/1024)*count, int64(time.Now().Sub(beginTime)/time.Second), int64(len(md5hashs)/1024)*count/int64(time.Now().Sub(beginTime)/time.Second))
+	fmt.Printf("every: %v micros duration: %v txcount: %v real duration: %v  md5hashs.len: %vB/tx  %vKB/tx totalSize %v KB / realDuration %v = %v KB/s  \n", 1000*1000 / *sendRate, *duration, count, time.Now().Sub(beginTime), len(md5hashs), len(md5hashs)/1024, int64(len(md5hashs)/1024)*count, int64(time.Now().Sub(beginTime)/time.Second), int64(len(md5hashs)/1024)*count/int64(time.Now().Sub(beginTime)/time.Second))
 
 	fmt.Printf("total size: %vKB  %vMB  %vGB  \n", int64(len(md5hashs)/1024)*count, int64(len(md5hashs)/1024)*count/1024, int64(len(md5hashs)/1024)*count/1024/1024)
 }
