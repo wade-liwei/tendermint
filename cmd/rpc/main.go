@@ -36,7 +36,7 @@ func main() {
 	port := flag.Int("port", 26657, "请输入端口号")
 
 	md5Count := flag.Int("md5count", 5000, "请输入md5个数")
-	sendRate := flag.Int("rateUnit", 1024, "单位是 Millisecond ")
+	sendRate := flag.Int("rateUnit", 1000, "单位是Microsecond = 1 millisecond = 0.1second ")
 	duration := flag.Int("duration", 10, "单位是 second ")
 
 	flag.Parse()
