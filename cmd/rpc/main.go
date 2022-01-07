@@ -49,7 +49,7 @@ func main() {
 
 	c := getHTTPClient(fmt.Sprintf("%s:%d", *host, *port))
 
-	limiter := rate.NewLimiter(rate.Every(time.Duration(*rateUnit)*time.Millisecond), 5)
+	limiter := rate.NewLimiter(rate.Every(time.Duration(*rateUnit)*time.Microsecond), 2)
 
 	wg := sync.WaitGroup{}
 	maxChannel := make(chan struct{}, 10000)
@@ -73,12 +73,14 @@ func main() {
 			count = atomic.AddInt64(&count, 1)
 		}()
 
-		if beginTime.Add(time.Duration(*duration)).After(time.Now()) {
+		if beginTime.Add(time.Duration(*duration) * time.Second).Before(time.Now()) {
 			break
 		}
 	}
 
 	wg.Wait()
 
-	fmt.Printf("every: %v duration: %v txcount: %v real duration: %v \n", rateUnit, duration, count, time.Now().Sub(beginTime))
+	fmt.Printf("every: %v duration: %v txcount: %v real duration: %v  md5hashs.len: %vB/tx  %vKB/tx totalSize %v KB / realDuration %v = %v KB/s  \n", *rateUnit, *duration, count, time.Now().Sub(beginTime), len(md5hashs), len(md5hashs)/1024, int64(len(md5hashs)/1024)*count, int64(time.Now().Sub(beginTime)/time.Second), int64(len(md5hashs)/1024)*count/int64(time.Now().Sub(beginTime)/time.Second))
+
+	fmt.Printf("total size: %vKB  %vMB  %vGB  \n", int64(len(md5hashs)/1024)*count, int64(len(md5hashs)/1024)*count/1024, int64(len(md5hashs)/1024)*count/1024/1024)
 }
