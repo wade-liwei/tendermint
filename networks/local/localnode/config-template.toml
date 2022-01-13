@@ -1,6 +1,9 @@
 [rpc]
 laddr = "tcp://0.0.0.0:26657"
 
+[instrumentation]
+prometheus = true
+
 [consensus]
 timeout_commit = "5s"
 
